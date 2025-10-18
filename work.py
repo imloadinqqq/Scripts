@@ -1,4 +1,15 @@
 #!/usr/bin/env python
+
+'''
+Running this script:
+Ensure you have Python 3.12.11 or later
+Navigate to directory and run `python work.py`
+If you would like to run this without navigating to directory, add the directory to PATH
+
+:3
+'''
+
+
 import os
 import sys
 import time
