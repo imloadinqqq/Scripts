@@ -19,6 +19,7 @@ import time
 import shutil
 import random
 import re
+import logging
 from datetime import datetime, timedelta
 
 # ---------------- ANSI colors ----------------
@@ -191,11 +192,27 @@ def live_display(duration):
         elapsed = datetime.now() - start_time
         clear_terminal()
         print_centered_text(f"{bcolors.yellow}⚠️  Timer interrupted! ⚠️\nElapsed: {str(elapsed).split('.')[0]}\nRemaining: {str(end_time - datetime.now()).split('.')[0]}{bcolors.ENDC}")
+        interrupt_logger.info(f"⚠️  Timer interrupted! ⚠️\nElapsed: {str(elapsed).split('.')[0]}\nRemaining: {str(end_time - datetime.now()).split('.')[0]}")
         sys.exit(0)
 
     clear_terminal()
     print_centered_text(f"{left_time} | ✅ goal complete | {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    success_logger.info(f"{left_time} | ✅ goal complete | {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 
+# ---------------- Logging ----------------
+success_logger = logging.getLogger('success_logger')
+success_logger.setLevel(logging.INFO)
+success_handler = logging.FileHandler('success.log')
+success_formatter = logging.Formatter('%(asctime)s - %(message)s')
+success_handler.setFormatter(success_formatter)
+success_logger.addHandler(success_handler)
+
+interrupt_logger = logging.getLogger('interrupt_logger')
+interrupt_logger.setLevel(logging.INFO)
+interrupt_handler = logging.FileHandler('interrupted.log')
+interrupt_formatter = logging.Formatter('%(asctime)s - %(message)s')
+interrupt_handler.setFormatter(interrupt_formatter)
+interrupt_logger.addHandler(interrupt_handler)
 
 # ---------------- Main ----------------
 if __name__ == "__main__":
