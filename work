@@ -3,10 +3,13 @@
 '''
 Running this script:
 Ensure you have Python 3.12.11 or later
-Navigate to directory and run `python work.py`
+Navigate to directory and run `python work`
 If you would like to run this without navigating to directory, add the directory to PATH
 
 :3
+
+- Saw on jvscholz YouTube and wanted to recreate it for fun
+- link to video: https://www.youtube.com/watch?v=2eVGQreqa20
 '''
 
 
