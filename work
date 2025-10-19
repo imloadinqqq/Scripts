@@ -12,7 +12,6 @@ If you would like to run this without navigating to directory, add the directory
 - link to video: https://www.youtube.com/watch?v=2eVGQreqa20
 '''
 
-
 import os
 import sys
 import time
@@ -22,6 +21,7 @@ import re
 import logging
 import argparse
 from datetime import datetime, timedelta
+
 
 # ---------------- ANSI colors ----------------
 class bcolors:
@@ -110,7 +110,7 @@ class TimeLine:
         self.right_time = right_time
 
     def center(self, term_width):
-        line = f"{bcolors.purple}{bcolors.UNDERLINE}{self.left_time}{bcolors.ENDC} | goal pending {self.countdown} | {bcolors.purple}{self.right_time}{bcolors.ENDC}"
+        line = f"{bcolors.purple}{bcolors.UNDERLINE}{self.left_time}{bcolors.ENDC} | {bcolors.aqua}goal pending{bcolors.ENDC} {bcolors.yellow}{self.countdown}{bcolors.ENDC} | {bcolors.purple}{self.right_time}{bcolors.ENDC}"
         visual_len = len(ANSI_ESCAPE.sub('', line))
         left_padding = max(0, (term_width - visual_len) // 2)
         return " " * left_padding + line
@@ -141,8 +141,8 @@ def format_duration(seconds):
 # ---------------- Reflection ----------------------
 def reflection_prompt(duration):
     restore()
-    print(rf'''Well done! It is important to reflect on your work and see ways in which you can improve.\n
-    It is also a good time to reflect on areas that you are doing well in!\n''')
+    print_centered_text(rf'''{bcolors.blue}Well done! It is important to reflect on your work and see ways in which you can improve.
+    It is also a good time to reflect on areas that you are doing well in!{bcolors.ENDC}''')
     description = input("Enter your reflection for this session:\n")
     formatted_duration = format_duration(duration)
     reflection = Reflection(formatted_duration, description)
@@ -181,7 +181,7 @@ def live_display(duration):
     start_time = datetime.now()
     end_time = start_time + timedelta(seconds=duration)
 
-    art_template = r'''         .        .            |       .        .        .
+    art_template = rf'''{bcolors.aqua}         .        .            |       .        .        .
               *        .       |   .        .
         .                     /-\     .           .   .
  .               .    .      |"""|              :        .
@@ -192,10 +192,10 @@ def live_display(duration):
  /""""| |::|''|~~~~||_____ |# # # #||"""|-|::|"""|''|_|   |
  |""""| |::|''|""""|:::::| |# # # #||"""|t|::|"""|''|"""""|
  |""""|_|  |''|""""|:::::| |# # # #||"""|||::|"""|''""""""|
- |""""|::::|''|""""|:::::| |# # # #||"""|||::|"""|''""""""|
+ |""""|::::|''|""""|:::::| |# # # #||"""|||::|"""|''""""""|{bcolors.ENDC}
 
-{quote}
-{time_line}'''
+{{quote}}
+{{time_line}}'''
 
     art = Art(art_template.replace("{quote}", "").replace("{time_line}", ""))
 
@@ -279,7 +279,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "-d", "--duration",
         type=parse_duration,
-        default=3600,
+        default=14400,
         help="Duration of the session (e.g. 1h30m, 25m, 300s)"
     )
     args = parser.parse_args()
