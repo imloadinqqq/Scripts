@@ -20,6 +20,7 @@ import shutil
 import random
 import re
 import logging
+import argparse
 from datetime import datetime, timedelta
 
 # ---------------- ANSI colors ----------------
@@ -91,6 +92,7 @@ class Art:
             centered_lines.append(" " * left_padding + line)
         return "\n".join(centered_lines)
 
+
 class Quote:
     def __init__(self, text, color=bcolors.green):
         self.text = f"{color}{text}{bcolors.ENDC}"
@@ -99,6 +101,7 @@ class Quote:
         visual_len = len(ANSI_ESCAPE.sub('', self.text))
         left_padding = max(0, (term_width - visual_len) // 2)
         return " " * left_padding + self.text
+
 
 class TimeLine:
     def __init__(self, left_time, countdown, right_time):
@@ -111,6 +114,7 @@ class TimeLine:
         visual_len = len(ANSI_ESCAPE.sub('', line))
         left_padding = max(0, (term_width - visual_len) // 2)
         return " " * left_padding + line
+
 
 class Reflection:
     def __init__(self, duration, description):
@@ -132,7 +136,6 @@ def format_duration(seconds):
     if secs > 0 or not parts:
         parts.append(f"{secs}s")
     return " ".join(parts)
-
 
 
 # ---------------- Reflection ----------------------
@@ -162,6 +165,16 @@ def display_block(art, quote, time_line):
     top_padding = max(0, (term_height - len(block_lines)) // 2)
 
     print("\n" * top_padding + "\n".join(block_lines))
+
+
+# ----------------- Duration Helper ----------------
+def parse_duration(value):
+    match = re.match(r'(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?$', value)
+    if not match:
+        raise argparse.ArgumentTypeError("Duration must be like '1h30m', '45m', or '300s'.")
+    hours, minutes, seconds = match.groups(default="0")
+    return int(hours) * 3600 + int(minutes) * 60 + int(seconds)
+
 
 # ---------------- Live display ----------------
 def live_display(duration):
@@ -227,6 +240,7 @@ def live_display(duration):
         clear_terminal()
         print_centered_text(f"{bcolors.yellow}⚠️  Timer interrupted! ⚠️\nElapsed: {str(elapsed).split('.')[0]}\nRemaining: {str(end_time - datetime.now()).split('.')[0]}{bcolors.ENDC}")
         interrupt_logger.info(f"⚠️  Timer interrupted! ⚠️\nElapsed: {str(elapsed).split('.')[0]}\nRemaining: {str(end_time - datetime.now()).split('.')[0]}")
+        restore()
         sys.exit(0)
 
     clear_terminal()
@@ -257,7 +271,18 @@ reflection_formatter = logging.Formatter('%(asctime)s - %(message)s')
 reflection_handler.setFormatter(reflection_formatter)
 reflection_logger.addHandler(reflection_handler)
 
-# ---------------- Main ----------------
+
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="Run a focused work session timer with ASCII display."
+    )
+    parser.add_argument(
+        "-d", "--duration",
+        type=parse_duration,
+        default=3600,
+        help="Duration of the session (e.g. 1h30m, 25m, 300s)"
+    )
+    args = parser.parse_args()
+
     print('\033[?25l', end="")  # hide cursor
-    live_display(duration=5)  # 4 hours
+    live_display(duration=args.duration)
