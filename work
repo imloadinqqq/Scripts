@@ -61,10 +61,7 @@ directory_path = Path.home() / "logs" / "work"
 if not directory_path.exists():
     directory_path.mkdir(parents=True)
     print(f"{bcolors.green}Created directory:{bcolors.ENDC} {directory_path}")
-else:
-    print(f"{bcolors.gray}Using existing directory:{bcolors.ENDC} {directory_path}")
-
-time.sleep(2)
+    time.sleep(2)
 
 
 # ---------------- Terminal helpers ----------------
