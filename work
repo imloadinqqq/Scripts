@@ -6,6 +6,9 @@ Ensure you have Python 3.12.11 or later
 Navigate to directory and run `python work`
 If you would like to run this without navigating to directory, add the directory to PATH
 
+Logs:
+To find logs, navigate to $HOME/logs/work
+
 :3
 
 - Saw on jvscholz YouTube and wanted to recreate it for fun
@@ -21,6 +24,7 @@ import re
 import logging
 import argparse
 from datetime import datetime, timedelta
+from pathlib import Path
 
 
 # ---------------- ANSI colors ----------------
@@ -49,6 +53,18 @@ class bcolors:
 
 
 ANSI_ESCAPE = re.compile(r'\x1B\[[0-?]*[ -/]*[@-~]')
+
+
+# ---------------- Path Setup ----------------------
+directory_path = Path.home() / "logs" / "work"
+
+if not directory_path.exists():
+    directory_path.mkdir(parents=True)
+    print(f"{bcolors.green}Created directory:{bcolors.ENDC} {directory_path}")
+else:
+    print(f"{bcolors.gray}Using existing directory:{bcolors.ENDC} {directory_path}")
+
+time.sleep(2)
 
 
 # ---------------- Terminal helpers ----------------
@@ -140,14 +156,20 @@ def format_duration(seconds):
 
 # ---------------- Reflection ----------------------
 def reflection_prompt(duration):
-    restore()
-    print_centered_text(rf'''{bcolors.blue}Well done! It is important to reflect on your work and see ways in which you can improve.
-    It is also a good time to reflect on areas that you are doing well in!{bcolors.ENDC}''')
-    description = input("Enter your reflection for this session:\n")
-    formatted_duration = format_duration(duration)
-    reflection = Reflection(formatted_duration, description)
-    reflection.write_to_log()
-    print("Thank you!")
+    try:
+        restore()
+        print_centered_text(f'''{bcolors.blue}Well done! It is important to reflect on your work and see ways in which you can improve.
+        It is also a good time to reflect on areas that you are doing well in!{bcolors.ENDC}''')
+        description = input("Enter your reflection for this session:\n")
+        formatted_duration = format_duration(duration)
+        reflection = Reflection(formatted_duration, description)
+        reflection.write_to_log()
+        print("Thank you!\n")
+        print(f"Log saved to: {bcolors.gray}{directory_path}/reflections.log{bcolors.ENDC}")
+    except KeyboardInterrupt:
+        print("\nReflection skipped.")
+    finally:
+        restore()
 
 
 # ---------------- Display function ----------------
@@ -252,21 +274,21 @@ def live_display(duration):
 # ---------------- Logging ----------------
 success_logger = logging.getLogger('success_logger')
 success_logger.setLevel(logging.INFO)
-success_handler = logging.FileHandler('success.log')
+success_handler = logging.FileHandler(Path.home() / 'logs' / 'work' / 'success.log')
 success_formatter = logging.Formatter('%(asctime)s - %(message)s')
 success_handler.setFormatter(success_formatter)
 success_logger.addHandler(success_handler)
 
 interrupt_logger = logging.getLogger('interrupt_logger')
 interrupt_logger.setLevel(logging.INFO)
-interrupt_handler = logging.FileHandler('interrupted.log')
+interrupt_handler = logging.FileHandler(Path.home() / 'logs' / 'work' / 'interrupted.log')
 interrupt_formatter = logging.Formatter('%(asctime)s - %(message)s')
 interrupt_handler.setFormatter(interrupt_formatter)
 interrupt_logger.addHandler(interrupt_handler)
 
 reflection_logger = logging.getLogger('reflection_logger')
 reflection_logger.setLevel(logging.INFO)
-reflection_handler = logging.FileHandler('reflections.log')
+reflection_handler = logging.FileHandler(Path.home() / 'logs' / 'work' / 'reflections.log')
 reflection_formatter = logging.Formatter('%(asctime)s - %(message)s')
 reflection_handler.setFormatter(reflection_formatter)
 reflection_logger.addHandler(reflection_handler)
