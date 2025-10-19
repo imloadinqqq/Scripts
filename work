@@ -86,7 +86,6 @@ class Art:
     def center(self, term_width):
         centered_lines = []
         for line in self.lines:
-            visual_len = len(ANSI_ESCAPE.sub('', line))
             # Center relative to terminal but preserve shape
             left_padding = max(0, (term_width - self.max_art_width) // 2)
             centered_lines.append(" " * left_padding + line)
@@ -112,6 +111,41 @@ class TimeLine:
         visual_len = len(ANSI_ESCAPE.sub('', line))
         left_padding = max(0, (term_width - visual_len) // 2)
         return " " * left_padding + line
+
+class Reflection:
+    def __init__(self, duration, description):
+        self.duration = duration
+        self.description = description
+
+    def write_to_log(self):
+        reflection_logger.info(f"Duration: {self.duration} | Reflection: {self.description}")
+
+
+def format_duration(seconds):
+    hours, remainder = divmod(int(seconds), 3600)
+    minutes, secs = divmod(remainder, 60)
+    parts = []
+    if hours > 0:
+        parts.append(f"{hours}h")
+    if minutes > 0:
+        parts.append(f"{minutes}m")
+    if secs > 0 or not parts:
+        parts.append(f"{secs}s")
+    return " ".join(parts)
+
+
+
+# ---------------- Reflection ----------------------
+def reflection_prompt(duration):
+    restore()
+    print(rf'''Well done! It is important to reflect on your work and see ways in which you can improve.\n
+    It is also a good time to reflect on areas that you are doing well in!\n''')
+    description = input("Enter your reflection for this session:\n")
+    formatted_duration = format_duration(duration)
+    reflection = Reflection(formatted_duration, description)
+    reflection.write_to_log()
+    print("Thank you!")
+
 
 # ---------------- Display function ----------------
 def display_block(art, quote, time_line):
@@ -197,7 +231,9 @@ def live_display(duration):
 
     clear_terminal()
     print_centered_text(f"{left_time} | ✅ goal complete | {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    success_logger.info(f"{left_time} | ✅ goal complete | {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    success_logger.info(f"{left_time} | ✅ goal complete | {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\nduration: {duration}")
+    reflection_prompt(duration)
+
 
 # ---------------- Logging ----------------
 success_logger = logging.getLogger('success_logger')
@@ -214,10 +250,14 @@ interrupt_formatter = logging.Formatter('%(asctime)s - %(message)s')
 interrupt_handler.setFormatter(interrupt_formatter)
 interrupt_logger.addHandler(interrupt_handler)
 
+reflection_logger = logging.getLogger('reflection_logger')
+reflection_logger.setLevel(logging.INFO)
+reflection_handler = logging.FileHandler('reflections.log')
+reflection_formatter = logging.Formatter('%(asctime)s - %(message)s')
+reflection_handler.setFormatter(reflection_formatter)
+reflection_logger.addHandler(reflection_handler)
+
 # ---------------- Main ----------------
 if __name__ == "__main__":
-    try:
-        print('\033[?25l', end="")  # hide cursor
-        live_display(duration=14400)  # 4 hours
-    finally:
-        restore()
+    print('\033[?25l', end="")  # hide cursor
+    live_display(duration=5)  # 4 hours
