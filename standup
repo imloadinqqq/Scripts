@@ -1,0 +1,134 @@
+#!/usr/bin/env python
+
+'''
+Running this script:
+    Ensure you have Python 3.12.11 or later
+    Navigate to directory and run `python work`
+    If you would like to run this without navigating to directory, add the directory to PATH
+
+Logs:
+To find logs, navigate to $HOME/logs/standup
+
+Daily reflection is important to me, so I made a quick script to keep me honest
+
+(I am in love with gruvbox's colors)
+
+- Alex Diaz
+'''
+
+from datetime import datetime
+import time
+import json
+import re
+import shutil
+from pathlib import Path
+
+
+# ---------------- ANSI colors ----------------
+class colors:
+    black      = '\033[38;5;234m'
+    dark1      = '\033[38;5;235m'
+    dark2      = '\033[38;5;236m'
+    dark3      = '\033[38;5;237m'
+    dark4      = '\033[38;5;239m'
+    gray       = '\033[38;5;244m'
+    light0     = '\033[38;5;223m'
+    light1     = '\033[38;5;230m'
+    light2     = '\033[38;5;229m'
+    light3     = '\033[38;5;180m'
+    red        = '\033[38;5;167m'
+    green      = '\033[38;5;142m'
+    yellow     = '\033[38;5;214m'
+    blue       = '\033[38;5;109m'
+    purple     = '\033[38;5;175m'
+    aqua       = '\033[38;5;108m'
+    orange     = '\033[38;5;208m'
+
+    ENDC       = '\033[0m'
+    BOLD       = '\033[1m'
+    UNDERLINE  = '\033[4m'
+
+
+ANSI_ESCAPE = re.compile(r'\x1B\[[0-?]*[ -/]*[@-~]')
+
+
+# --------------- Variables ------------
+questions = [
+    "What did you get done today?",
+    "What did you learn today?",
+    "What can you do better tomorrow?"
+]
+
+today = datetime.today().strftime("%Y-%m-%d")
+now = datetime.now()
+
+# ------------- Paths --------------
+directory_path = Path.home() / "logs" / "standup"
+backup_path = Path.home() / "logs" / "standup" / "backups"
+json_file_path = directory_path / "standup.json"
+backup_file_path = backup_path / f"backup_{now:%Y%m%d_%H%M%S}.json"
+
+directories = [
+    directory_path,
+    backup_path
+]
+
+for directory in directories:
+    if not directory.exists():
+        directory.mkdir(parents=True)
+        print(f"{colors.green}Created directory:{colors.ENDC} {directory}")
+        time.sleep(2)
+
+
+# ------------- Functions --------------------
+def checkDate():
+    with open(json_file_path, "r") as f:
+        content = f.read()
+
+        if datetime.today().strftime("%Y-%m-%d") in content:
+            print(f"{colors.red}Can't log! Already done for today{colors.ENDC}")
+            exec(exit(-1))
+
+
+def addData(data):
+    with open(json_file_path, "w") as f:
+        json.dump(data, f, indent=4)
+
+
+def backup():
+    x = input("Would you like to save a backup? (Y/N): ").strip().lower()
+    if x == 'y':
+        try:
+            shutil.copy2(json_file_path, backup_file_path)
+            print(f"{colors.green}\nBackup saved to:{colors.gray} {backup_file_path}{colors.ENDC}")
+            print(f"{colors.blue}\nThank you!{colors.ENDC}")
+        except Exception as e:
+            print(f"{colors.red}Error during backup: {e}{colors.ENDC}")
+    else:
+        print(f"{colors.yellow}\nBackup skipped.{colors.ENDC}")
+
+
+def prompt():
+    ans1 = input(f"{colors.green}{questions[0]}{colors.ENDC} ")
+    ans2 = input(f"{colors.green}{questions[1]}{colors.ENDC} ")
+    ans3 = input(f"{colors.green}{questions[2]}{colors.ENDC} ")
+
+    payload = {
+        "date": today,
+        "answers": {
+            "question1": ans1,
+            "question2": ans2,
+            "question3": ans3
+        }
+    }
+
+    addData(payload)
+
+
+if __name__ == "__main__":
+    checkDate()
+    try:
+        prompt()
+        backup()
+    except KeyboardInterrupt:
+        print(f"{colors.yellow}\n\nCancelled!{colors.ENDC}")
