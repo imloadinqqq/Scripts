@@ -6,6 +6,8 @@ Ensure you have Python 3.12.11 or later
 Navigate to directory and run `python work`
 If you would like to run this without navigating to directory, add the directory to PATH
 
+
+
 Logs:
 To find logs, navigate to $HOME/logs/work
 
@@ -56,6 +58,8 @@ ANSI_ESCAPE = re.compile(r'\x1B\[[0-?]*[ -/]*[@-~]')
 
 
 # ---------------- Path Setup ----------------------
+curr_dir = Path(__file__).resolve().parent
+sound_path = curr_dir / 'done.wav'
 directory_path = Path.home() / "logs" / "work"
 
 if not directory_path.exists():
@@ -266,7 +270,10 @@ def live_display(duration):
     print_centered_text(f"{left_time} | ✅ goal complete | {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     success_logger.info(f"{left_time} | ✅ goal complete | {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\nduration: {duration}")
 
-    playsound('./done.wav')
+    if sound_path.exists():
+        playsound(sound_path)
+    else:
+        print(f"{bcolors.yellow}⚠️ Sound file not found {sound_path}{bcolors.ENDC}")
 
     reflection_prompt(duration)
 
