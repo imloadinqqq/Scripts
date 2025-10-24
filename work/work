@@ -25,7 +25,7 @@ import logging
 import argparse
 from datetime import datetime, timedelta
 from pathlib import Path
-
+from playsound import playsound
 
 # ---------------- ANSI colors ----------------
 class bcolors:
@@ -265,6 +265,9 @@ def live_display(duration):
     clear_terminal()
     print_centered_text(f"{left_time} | ✅ goal complete | {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     success_logger.info(f"{left_time} | ✅ goal complete | {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\nduration: {duration}")
+
+    playsound('./done.wav')
+
     reflection_prompt(duration)
 
 
